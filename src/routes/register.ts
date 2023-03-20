@@ -5,4 +5,5 @@ const router = Router();
 
 router.post("/", handleNewUser);
 
+
 export default router;

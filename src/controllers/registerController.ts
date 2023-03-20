@@ -1,20 +1,23 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { IRolesList, IUser } from "../interfaces/interface";
 import User from "../model/User";
-const bcrypt = require("bcrypt");
+import createHttpError from "http-errors";
 
-export const handleNewUser = async (req: Request, res: Response) => {
-  const { user, pwd } = req.body;
-  if (!user || !pwd)
-    return res
-      .status(400)
-      .json({ message: "Username and password are required." });
-
-  // check for duplicate usernames in the db
-  const duplicate: IUser | null = await User.findOne({ username: user }).exec();
-  if (duplicate) return res.sendStatus(409); //Conflict
-
+export const handleNewUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
+    const { user, pwd } = req.body;
+    if (!user || !pwd)
+      throw createHttpError.BadRequest("Username and password are required.");
+
+    // check for duplicate usernames in the db
+    const duplicate: IUser | null = await User.findOne({
+      username: user,
+    }).exec();
+    if (duplicate) throw createHttpError.Conflict("Username is already taken!");
 
     //create and store the new user
     const newUser: {
@@ -27,12 +30,10 @@ export const handleNewUser = async (req: Request, res: Response) => {
       password: pwd,
     };
 
-    const result = await new User(newUser).save()
+    await new User(newUser).save();
 
-    console.log(result);
-
-    res.status(201).json({ success: `New user ${user} created!` });
+    res.status(201).json({ success: `New user created!` });
   } catch (err) {
-    if (err instanceof Error) res.status(500).json({ message: err.message });
+    next(err);
   }
 };

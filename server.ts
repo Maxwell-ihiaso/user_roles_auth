@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
@@ -13,6 +13,7 @@ import credentials from "./src/middleware/credentials";
 import connectDB from "./src/config/dbConn";
 import { auth, logout, refresh, register, root } from "./src/routes";
 import { users, employees } from "./src/routes/api";
+import createHttpError from "http-errors";
 const PORT = process.env.PORT || 3500;
 
 const app = express();
@@ -48,18 +49,21 @@ app.use("/auth", auth);
 app.use("/refresh", refresh);
 app.use("/logout", logout);
 
-app.use(verifyJWT);
-app.use("/employees", employees);
-app.use("/users", users);
+app.use("/employees", verifyJWT, employees);
+app.use("/users", verifyJWT, users);
 
-app.all("*", (req: Request, res: Response) => {
-  res.status(404);
-  if (req.accepts("html")) {
-    res.sendFile(path.join(__dirname, "views", "404.html"));
-  } else if (req.accepts("json")) {
-    res.json({ error: "404 Not Found" });
-  } else {
-    res.type("txt").send("404 Not Found");
+app.all("*", (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.status(404);
+    if (req.accepts("html")) {
+      res.sendFile(path.join(__dirname, "views", "404.html"));
+    } else if (req.accepts("json")) {
+      throw createHttpError.NotFound("404 Not Found");
+    } else {
+      res.type("txt").send("404 Not Found");
+    }
+  } catch (error) {
+    next(error);
   }
 });
 

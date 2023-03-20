@@ -6,8 +6,7 @@ const { logEvents } = require('./logEvents');
 const errorHandler = (err: HttpError, req: Request, res: Response, next: NextFunction) => {
     const status = err.status || 500
     logEvents(`${err.name}: ${err.message}`, 'errLog.txt');
-    console.error(err.stack)
-    res.status(status).send(err.message);
+    res.status(status).json({message: err.message});
 }
 
 export default errorHandler
