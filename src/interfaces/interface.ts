@@ -16,8 +16,8 @@ export interface customPayload extends JwtPayload {
 
 // JWT sign and set a variable on request
 export interface CustomRequest extends Request {
-  user: string | customPayload;
-  roles: number[] | customPayload;
+  user: string | JwtPayload;
+  roles: number[] | JwtPayload;
 }
 
 // User Roles
