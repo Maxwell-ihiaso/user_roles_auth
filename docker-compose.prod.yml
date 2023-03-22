@@ -1,0 +1,15 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3501:3500"
+    env_file:
+      - ./.env
+    command: yarn build

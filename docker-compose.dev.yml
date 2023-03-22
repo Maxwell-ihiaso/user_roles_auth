@@ -1,0 +1,18 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=development
+    ports:
+      - "3500:3500"
+    volumes:
+     - ./:/usr/app
+     - /usr/app/node_modules
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - ./.env
+    command: yarn dev
